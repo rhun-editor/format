@@ -1,0 +1,33 @@
+rhun-editor/format state=idle pid=0 cmds=format.format_document
+ext=format state=running
+{
+  "name": "Ahmed",
+  "projects": [
+    {
+      "name": "Rhun",
+      "status": "active"
+    },
+    {
+      "n": 1
+    }
+  ]
+}
+
+<eod>
+toast=Formatted with JSON
+{"a": 1,
+  "b": }
+
+<eod>
+toast=Format: invalid JSON at line 2, column 9: invalid character '}' looking for beginning of value
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("hi")
+}
+
+<eod>
+toast=Formatted with gofmt
+toast=Format: no formatter for this file type

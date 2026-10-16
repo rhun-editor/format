@@ -1,0 +1,23 @@
+# rhun PROJECT --headless --extensions DIR --script tests/basic.txt (tests/run.sh sets it up)
+wait 100
+print-extensions
+open proj/data.json
+cmd format.format_document
+wait-ext format running
+wait 500
+print-doc
+print-toast
+open proj/bad.json
+cmd format.format_document
+wait 400
+print-doc
+print-toast
+open proj/main.go
+cmd format.format_document
+wait 800
+print-doc
+print-toast
+open proj/notes.txt
+cmd format.format_document
+wait 300
+print-toast
