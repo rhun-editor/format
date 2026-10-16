@@ -1,4 +1,4 @@
-rhun-editor/format state=idle pid=0 cmds=format.format_document
+rhun-editor/format state=idle pid=0 cmds=format.format_document confined=0
 ext=format state=running
 {
   "name": "Ahmed",
