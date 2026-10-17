@@ -1,5 +1,6 @@
-// format: Format Document for rhun. JSON is formatted here; every other language runs the
-// formatter the user has installed, found on PATH and named in extension.ini's `run` list.
+// format: Format Document for rhun (shift+alt+f asks it, provider.go; its own command too). JSON
+// is formatted here; every other language runs the formatter the user has installed, found on
+// PATH and named in extension.ini's `run` list.
 // Settings: $RHUN_STATE/format.ini (section 7 of the README).
 // Protocol: https://rhun.app/extensions/v1/
 package main
@@ -26,34 +27,34 @@ type formatter struct {
 
 // byLang maps rhun's grammar names (spaces as underscores) to the formatter to try, in order.
 var byLang = map[string][]formatter{
-	"Go":         {{"gofmt", nil}},
-	"Rust":       {{"rustfmt", []string{"--emit", "stdout", "--edition", "2021"}}},
-	"Python":     {{"ruff", []string{"format", "-", "--stdin-filename", "{path}"}}, {"black", []string{"-q", "-", "--stdin-filename", "{path}"}}},
-	"JavaScript": {{"prettier", []string{"--stdin-filepath", "{path}"}}},
-	"TypeScript": {{"prettier", []string{"--stdin-filepath", "{path}"}}},
-	"CSS":        {{"prettier", []string{"--stdin-filepath", "{path}"}}},
-	"HTML":       {{"prettier", []string{"--stdin-filepath", "{path}"}}},
-	"Markdown":   {{"prettier", []string{"--stdin-filepath", "{path}"}}},
-	"YAML":       {{"prettier", []string{"--stdin-filepath", "{path}"}}},
-	"C":          {{"clang-format", []string{"--assume-filename={path}"}}},
-	"C++":        {{"clang-format", []string{"--assume-filename={path}"}}},
-	"Shell":      {{"shfmt", []string{"-filename", "{path}"}}},
-	"Zig":        {{"zig", []string{"fmt", "--stdin"}}},
-	"Nix":        {{"nixfmt", nil}},
-	"Terraform":  {{"terraform", []string{"fmt", "-"}}},
-	"HCL":        {{"terraform", []string{"fmt", "-"}}},
-	"SQL":        {{"sql-formatter", nil}},
-	"Dart":       {{"dart", []string{"format"}}},
-	"Swift":      {{"swift-format", nil}},
-	"Kotlin":     {{"ktfmt", []string{"-"}}},
-	"Lua":        {{"stylua", []string{"-"}}},
-	"Ruby":       {{"rubocop", []string{"-a", "--stdin", "{path}", "--stderr", "-f", "quiet"}}},
-	"Elixir":     {{"mix", []string{"format", "-"}}},
-	"Haskell":    {{"ormolu", nil}, {"fourmolu", nil}},
-	"OCaml":      {{"ocamlformat", []string{"--name", "{path}", "-"}}},
-	"Protobuf":   {{"buf", []string{"format", "-"}}},
+	"Go":               {{"gofmt", nil}},
+	"Rust":             {{"rustfmt", []string{"--emit", "stdout", "--edition", "2021"}}},
+	"Python":           {{"ruff", []string{"format", "-", "--stdin-filename", "{path}"}}, {"black", []string{"-q", "-", "--stdin-filename", "{path}"}}},
+	"JavaScript":       {{"prettier", []string{"--stdin-filepath", "{path}"}}},
+	"TypeScript":       {{"prettier", []string{"--stdin-filepath", "{path}"}}},
+	"CSS":              {{"prettier", []string{"--stdin-filepath", "{path}"}}},
+	"HTML":             {{"prettier", []string{"--stdin-filepath", "{path}"}}},
+	"Markdown":         {{"prettier", []string{"--stdin-filepath", "{path}"}}},
+	"YAML":             {{"prettier", []string{"--stdin-filepath", "{path}"}}},
+	"C":                {{"clang-format", []string{"--assume-filename={path}"}}},
+	"C++":              {{"clang-format", []string{"--assume-filename={path}"}}},
+	"Shell":            {{"shfmt", []string{"-filename", "{path}"}}},
+	"Zig":              {{"zig", []string{"fmt", "--stdin"}}},
+	"Nix":              {{"nixfmt", nil}},
+	"Terraform":        {{"terraform", []string{"fmt", "-"}}},
+	"HCL":              {{"terraform", []string{"fmt", "-"}}},
+	"SQL":              {{"sql-formatter", nil}},
+	"Dart":             {{"dart", []string{"format"}}},
+	"Swift":            {{"swift-format", nil}},
+	"Kotlin":           {{"ktfmt", []string{"-"}}},
+	"Lua":              {{"stylua", []string{"-"}}},
+	"Ruby":             {{"rubocop", []string{"-a", "--stdin", "{path}", "--stderr", "-f", "quiet"}}},
+	"Elixir":           {{"mix", []string{"format", "-"}}},
+	"Haskell":          {{"ormolu", nil}, {"fourmolu", nil}},
+	"OCaml":            {{"ocamlformat", []string{"--name", "{path}", "-"}}},
+	"Protobuf":         {{"buf", []string{"format", "-"}}},
 	"Protocol_Buffers": {{"buf", []string{"format", "-"}}},
-	"TOML":       {{"taplo", []string{"format", "-"}}},
+	"TOML":             {{"taplo", []string{"format", "-"}}},
 }
 
 type settings struct {
@@ -63,8 +64,9 @@ type settings struct {
 }
 
 type format struct {
-	docs  map[rhunext.Doc]rhunext.Opened
-	state string
+	docs    map[rhunext.Doc]rhunext.Opened
+	state   string
+	jsonSet bool // format.ini set the JSON indentation (else a provider request's settings count)
 }
 
 func (f *format) Ready(ext *rhunext.Ext, project string) {
@@ -227,6 +229,7 @@ func lineCol(text []byte, off int) (int, int) {
 //	timeout = 10     # seconds a formatter may take
 func (f *format) settings() settings {
 	s := settings{indent: 2, timeout: 10 * time.Second}
+	f.jsonSet = false
 	data, err := os.ReadFile(filepath.Join(f.state, "format.ini"))
 	if err != nil {
 		return s
@@ -244,8 +247,10 @@ func (f *format) settings() settings {
 		switch k {
 		case "indent":
 			fmt.Sscan(v, &s.indent)
+			f.jsonSet = true
 		case "tabs":
 			s.tabs = v == "yes" || v == "true"
+			f.jsonSet = true
 		case "timeout":
 			var n int
 			fmt.Sscan(v, &n)
@@ -268,7 +273,7 @@ func orDash(s string) string {
 }
 
 func main() {
-	if err := rhunext.Run(&format{}); err != nil {
+	if err := rhunext.RunWith([]string{rhunext.FeatureFormat}, &format{}); err != nil {
 		os.Exit(1)
 	}
 }

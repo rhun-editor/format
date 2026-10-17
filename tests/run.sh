@@ -19,11 +19,14 @@ printf '{"name":"Ahmed","projects":[{"name":"Rhun","status":"active"},{"n":1}]}'
 printf '{"a": 1,\n  "b": }\n' > "$work/proj/bad.json"
 printf 'package main\n\nimport "fmt"\n\nfunc  main( ) {\nfmt.Println("hi")\n}\n' > "$work/proj/main.go"
 printf 'just text\n' > "$work/proj/notes.txt"
+printf 'package main\n\nimport "fmt"\n\nfunc  main( ) {\nfmt.Println("hi")\n}\n\n// the end\n' > "$work/proj/main2.go"
+printf '{"a":1,"b":[true]}' > "$work/proj/data2.json"
 printf '[files]\nrestore_session = false\nrestore_project = false\n[updates]\ncheck = false\n[git]\nenabled = false\n[ui]\nsidebar = false\nagents_panel = false\n' > "$work/config/rhun/config"
 sed "s|proj/|$work/proj/|" tests/basic.txt > "$work/basic.txt"
 HOME=$work XDG_CONFIG_HOME=$work/config XDG_STATE_HOME=$work/state PATH="$PATH:$(go env GOROOT)/bin" \
     "$RHUN" "$work/proj" --headless 1000x600 --scale 1 --extensions "$work/exts" --script "$work/basic.txt" 2>&1 \
     | sed 's/pid=[1-9][0-9]*/pid=PID/' > "$work/out.txt"
+[ -n "$UPDATE" ] && cp "$work/out.txt" tests/basic.expected
 if cmp -s "$work/out.txt" tests/basic.expected; then
     echo "ok   basic"
 else

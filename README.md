@@ -6,9 +6,10 @@ gofmt, rustfmt, ruff or black, prettier, clang-format, shfmt, zig fmt, nixfmt, t
 sql-formatter, dart format, swift-format, ktfmt, stylua, rubocop, mix format, ormolu or
 fourmolu, ocamlformat, buf, taplo. Nothing is downloaded.
 
-Command: **Format Document** (Ctrl+Shift+I). The whole document is replaced as one undo step;
-if the document changed while the formatter ran, nothing is replaced. An invalid JSON file is
-left as it is and the toast names the line and column.
+Format Document: **Shift+Alt+F** (rhun asks the extension, with the document's tab width and
+spaces; JSON follows them unless `format.ini` sets its own) or the extension's command
+(Ctrl+Shift+I). Only the lines that changed are replaced, as one undo step; if you typed
+meanwhile, nothing changes.
 
 ## Settings
 

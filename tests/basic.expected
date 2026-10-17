@@ -31,3 +31,23 @@ func main() {
 <eod>
 toast=Formatted with gofmt
 toast=Format: no formatter for this file type
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("hi")
+}
+
+// the end
+
+<eod>
+tabs=5 active=main2.go line=10 col=1 sel=0 dirty=1 lang=Go focus=0 theme=rhun-dark
+{
+    "a": 1,
+    "b": [
+        true
+    ]
+}
+
+<eod>

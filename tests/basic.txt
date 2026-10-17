@@ -21,3 +21,15 @@ open proj/notes.txt
 cmd format.format_document
 wait 300
 print-toast
+open proj/main2.go
+wait 300
+key ctrl+End
+key shift+alt+f
+wait 800
+print-doc
+print-state
+open proj/data2.json
+wait 300
+key shift+alt+f
+wait 600
+print-doc
