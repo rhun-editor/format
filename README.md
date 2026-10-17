@@ -9,7 +9,8 @@ fourmolu, ocamlformat, buf, taplo. Nothing is downloaded.
 Format Document: **Shift+Alt+F** (rhun asks the extension, with the document's tab width and
 spaces; JSON follows them unless `format.ini` sets its own) or the extension's command
 (Ctrl+Shift+I). Only the lines that changed are replaced, as one undo step; if you typed
-meanwhile, nothing changes.
+meanwhile, nothing changes. An invalid JSON file is left as it is and the toast names the line
+and column.
 
 ## Settings
 
