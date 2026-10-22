@@ -1,4 +1,4 @@
-rhun-editor/format state=idle pid=0 cmds=format.format_document confined=0
+rhun-editor/format state=idle pid=0 cmds=format.format_document,format.goto_error confined=0
 ext=format state=running
 {
   "name": "Ahmed",
@@ -19,7 +19,7 @@ toast=Formatted with JSON
   "b": }
 
 <eod>
-toast=Format: invalid JSON at line 2, column 9: invalid character '}' looking for beginning of value
+toast=Format: invalid JSON at line 2, column 8: invalid character '}' looking for beginning of value
 package main
 
 import "fmt"

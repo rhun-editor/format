@@ -1,8 +1,10 @@
-// format: Format Document for rhun (shift+alt+f asks it, provider.go; its own command too). JSON
-// is formatted here; every other language runs the formatter the user has installed, found on
-// PATH and named in extension.ini's `run` list.
+// format: Format Document for rhun (shift+alt+f asks it, provider.go; its own command too), Format
+// Selection and formatting as you type (partial.go). JSON is formatted here; every other language
+// runs the formatter the user has installed, found on PATH and named in extension.ini's `run`
+// list. A file that does not format shows why in the status bar (status.go).
 // Settings: $RHUN_STATE/format.ini (section 7 of the README).
-// Protocol: https://rhun.app/extensions/v1/
+// Protocol: https://rhun.app/extensions/v1/ and its 1.1 features (partial-format, status-items,
+// command-args).
 package main
 
 import (
@@ -66,8 +68,14 @@ type settings struct {
 type format struct {
 	docs    map[rhunext.Doc]rhunext.Opened
 	state   string
-	jsonSet bool // format.ini set the JSON indentation (else a provider request's settings count)
+	jsonSet bool        // format.ini set the JSON indentation (else a provider request's settings count)
+	failing rhunext.Doc // the document the status bar's error is about, 0 for none
 }
+
+// unavailable is a file no formatter here can format: said in a toast, not in the status bar.
+type unavailable string
+
+func (u unavailable) Error() string { return string(u) }
 
 func (f *format) Ready(ext *rhunext.Ext, project string) {
 	f.docs = map[rhunext.Doc]rhunext.Opened{}
@@ -85,14 +93,27 @@ func (f *format) Event(ext *rhunext.Ext, ev rhunext.Event) {
 			var d int64
 			fmt.Sscan(ev.Args[0], &d)
 			delete(f.docs, rhunext.Doc(d))
+			f.succeeded(ext, rhunext.Doc(d))
 		}
 	}
 }
 
+// Run is a command without command-args (a host that did not agree it).
 func (f *format) Run(ext *rhunext.Ext, command string, doc rhunext.Doc) {
-	if command != "format.format_document" {
-		return
+	f.Invoke(ext, rhunext.Invocation{Command: command, Doc: doc})
+}
+
+// Invoke is every invocation of a command, with where it came from and its body.
+func (f *format) Invoke(ext *rhunext.Ext, inv rhunext.Invocation) {
+	switch inv.Name() {
+	case "format_document":
+		f.formatDocument(ext, inv.Doc)
+	case "goto_error":
+		f.gotoError(ext, inv.Doc, inv.Body)
 	}
+}
+
+func (f *format) formatDocument(ext *rhunext.Ext, doc rhunext.Doc) {
 	if doc == 0 {
 		ext.Toast("Nothing to format")
 		return
@@ -106,10 +127,10 @@ func (f *format) Run(ext *rhunext.Ext, command string, doc rhunext.Doc) {
 	s := f.settings()
 	out, how, err := f.formatText(info, text, s)
 	if err != nil {
-		ext.Toast("Format: " + err.Error())
-		ext.Logf("%s: %v", info.Path, err)
+		f.failed(ext, doc, err)
 		return
 	}
+	f.succeeded(ext, doc)
 	if bytes.Equal(out, text) {
 		ext.Status("")
 		return
@@ -136,7 +157,7 @@ func (f *format) formatText(info rhunext.Opened, text []byte, s settings) ([]byt
 	}
 	cands, ok := byLang[lang]
 	if !ok || lang == "" {
-		return nil, "", fmt.Errorf("no formatter for %s", orDash(lang))
+		return nil, "", unavailable(fmt.Sprintf("no formatter for %s", orDash(lang)))
 	}
 	for _, c := range cands {
 		if _, err := exec.LookPath(c.program); err != nil {
@@ -149,7 +170,7 @@ func (f *format) formatText(info rhunext.Opened, text []byte, s settings) ([]byt
 	for i, c := range cands {
 		names[i] = c.program
 	}
-	return nil, "", fmt.Errorf("%s not installed", strings.Join(names, " or "))
+	return nil, "", unavailable(strings.Join(names, " or ") + " not installed")
 }
 
 func runFormatter(c formatter, path string, text []byte, timeout time.Duration) ([]byte, error) {
@@ -186,7 +207,8 @@ func formatJSON(text []byte, s settings) ([]byte, error) {
 	dec.UseNumber()
 	if err := dec.Decode(&v); err != nil {
 		if se, ok := err.(*json.SyntaxError); ok {
-			line, col := lineCol(text, int(se.Offset))
+			// Offset counts the byte at fault: the position is the one before it
+			line, col := lineCol(text, int(se.Offset)-1)
 			return nil, fmt.Errorf("invalid JSON at line %d, column %d: %s", line, col, se.Error())
 		}
 		return nil, fmt.Errorf("invalid JSON: %w", err)
@@ -273,7 +295,8 @@ func orDash(s string) string {
 }
 
 func main() {
-	if err := rhunext.RunWith([]string{rhunext.FeatureFormat}, &format{}); err != nil {
+	features := []string{rhunext.FeatureFormat, rhunext.FeaturePartialFormat, rhunext.FeatureStatusItems, rhunext.FeatureCommandArgs}
+	if err := rhunext.RunWith(features, &format{}); err != nil {
 		os.Exit(1)
 	}
 }

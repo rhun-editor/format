@@ -1,0 +1,75 @@
+# rhun PROJECT --headless --extensions DIR --script tests/partial.txt (tests/run.sh sets it up,
+# with [editor] format_on_type = yes and [files] format_on_save = true).
+# Format Selection: only func b, the lines selected, is formatted.
+wait 100
+open proj/part.go
+wait 300
+key ctrl+Home
+key Down
+key Down
+key Down
+key Down
+key Down
+key Down
+key shift+Down
+key shift+Down
+key shift+Down
+cmd format_selection
+wait-ext format running
+wait 500
+wait 300
+print-doc
+# Enter at the end of x:=1 formats that line, and leaves the rest and the new line alone.
+key ctrl+Home
+key Down
+key Down
+key Down
+key End
+key Return
+wait 500
+wait 300
+print-doc
+print-state
+# } closing a block formats the block, from its { to the }.
+key ctrl+End
+type func  c( ) {
+key Return
+type z:=3
+key Return
+type }
+wait 500
+wait 300
+print-doc
+# rhun's format on save asks the same provider before it writes the file.
+open proj/save.go
+wait 300
+key ctrl+End
+type // the end
+key ctrl+s
+wait 500
+wait 300
+print-doc
+print-state
+# A file that does not format: the status bar says why while it is the active file; its click
+# (a command reference) puts the cursor at the line and column.
+open proj/bad.json
+wait 300
+cmd format.format_document
+wait 500
+wait 300
+print-status
+cmd-args format.goto_error 2 8
+wait 300
+wait 300
+print-state
+open proj/part.go
+wait 300
+print-status
+open proj/bad.json
+wait 300
+type 2
+cmd format.format_document
+wait 500
+wait 300
+print-doc
+print-status
