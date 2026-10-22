@@ -50,6 +50,5 @@ network.
 
 `go test ./...` covers the line comparison behind partial formatting. `tests/run.sh [RHUN]` builds
 the extension, lays it out as rhun installs it and runs `tests/basic.txt` (Format Document) and
-`tests/partial.txt` (the 1.1 parts above) headlessly. Until SDK v1.4.0 is released, build with a
-`go.work` that uses a checkout of `rhun-editor/extension-protocol` (`GOWORK=…`). Releases are built by the reusable workflow from
+`tests/partial.txt` (the 1.1 parts above) headlessly. Releases are built by the reusable workflow from
 `rhun-editor/extension-template`.
