@@ -46,7 +46,7 @@ func main() {
 // the end
 
 <eod>
-tabs=2 active=save.go line=5 col=1 sel=0 dirty=0 lang=Go focus=0 theme=rhun-dark
+tabs=2 active=save.go line=7 col=1 sel=0 dirty=0 lang=Go focus=0 theme=rhun-dark
 side=left prio=-10 owner=rhun-editor/format item=error text=$(error) Format: invalid JSON at line 2, column 8: invalid character '}' looking for beginning of va… tooltip=invalid JSON at line 2, column 8: invalid character '}' looking for beginning of value\n\nClick to go there. command=goto_error shown=1 at=94,577,252,20
 tabs=3 active=bad.json line=2 col=8 sel=0 dirty=0 lang=JSON focus=0 theme=rhun-dark
 side=left prio=-10 owner=rhun-editor/format item=error text=$(error) Format: invalid JSON at line 2, column 8: invalid character '}' looking for beginning of va… tooltip=invalid JSON at line 2, column 8: invalid character '}' looking for beginning of value\n\nClick to go there. command=goto_error shown=0 at=94,577,252,20
