@@ -4,7 +4,7 @@ Format Document for [rhun](https://rhun.app). JSON is formatted by the extension
 other language is handed to the formatter you already have installed, found on your `PATH`:
 gofmt, rustfmt, ruff or black, prettier, clang-format, shfmt, zig fmt, nixfmt, terraform fmt,
 sql-formatter, dart format, swift-format, ktfmt, stylua, rubocop, mix format, ormolu or
-fourmolu, ocamlformat, buf, taplo. Nothing is downloaded.
+fourmolu, ocamlformat, buf, taplo, gt (Genotype). Nothing is downloaded.
 
 Format Document: **Shift+Alt+F** (rhun asks the extension, with the document's tab width and
 spaces; JSON follows them unless `format.ini` sets its own) or the extension's command
@@ -27,6 +27,18 @@ It needs rhun 0.18, and shows these parts of its extension protocol 1.1:
   as its tooltip. When the message names a line and a column, a click goes there: the item
   carries a command reference with them as arguments (`command-args`) to the command
   `goto_error`, which `[command-options]` keeps out of the palette.
+
+## Genotype
+
+Genotype `.type` files use the Genotype CLI, `gt` 0.18.0 or later, installed from
+[genotype-lang.org](https://genotype-lang.org/docs/getting-started/installation/).
+The extension checks the CLI version because other tools can also use the name `gt`.
+
+`gt fmt` normally formats a directory in place. The extension gives it a temporary directory in
+its own state folder containing only the current buffer, then returns the result as an editor
+edit. Unsaved changes are included, project files stay untouched until you save, and the edit is
+one undo step. Format Selection, format on save, and optional formatting as you type use the
+same adapter. Invalid source, a missing CLI, or a timeout leaves the buffer unchanged.
 
 ## Settings
 
@@ -52,3 +64,9 @@ network.
 the extension, lays it out as rhun installs it and runs `tests/basic.txt` (Format Document) and
 `tests/partial.txt` (the 1.1 parts above) headlessly. Releases are built by the reusable workflow from
 `rhun-editor/extension-template`.
+
+The Go tests also exercise the Genotype adapter with a portable helper executable: CLI identity,
+version checks, exact buffer input, isolation from project files, failures, timeouts, and cleanup.
+With a real Genotype CLI installed, run `python3 tests/genotype.py /path/to/rhun` for formatting,
+undo, selection, save, invalid-source and on-type integration tests. Set `RHUN_GENOTYPE_CLI` to
+its executable path when it is not on PATH. CI runs these against the pinned Genotype 0.18.0 CLI.

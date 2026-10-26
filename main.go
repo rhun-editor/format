@@ -57,6 +57,7 @@ var byLang = map[string][]formatter{
 	"Protobuf":         {{"buf", []string{"format", "-"}}},
 	"Protocol_Buffers": {{"buf", []string{"format", "-"}}},
 	"TOML":             {{"taplo", []string{"format", "-"}}},
+	"Genotype":         {{"gt", []string{"fmt"}}},
 }
 
 type settings struct {
@@ -149,6 +150,8 @@ func (f *format) formatText(info rhunext.Opened, text []byte, s settings) ([]byt
 		switch strings.ToLower(filepath.Ext(info.Path)) {
 		case ".json", ".jsonc", ".json5":
 			lang = "JSON"
+		case ".type":
+			lang = "Genotype"
 		}
 	}
 	if lang == "JSON" {
@@ -160,8 +163,13 @@ func (f *format) formatText(info rhunext.Opened, text []byte, s settings) ([]byt
 		return nil, "", unavailable(fmt.Sprintf("no formatter for %s", orDash(lang)))
 	}
 	for _, c := range cands {
-		if _, err := exec.LookPath(c.program); err != nil {
+		program, err := exec.LookPath(c.program)
+		if err != nil {
 			continue
+		}
+		if lang == "Genotype" {
+			out, err := runGenotype(program, f.state, text, s.timeout)
+			return out, c.program, err
 		}
 		out, err := runFormatter(c, info.Path, text, s.timeout)
 		return out, c.program, err
