@@ -36,3 +36,12 @@ jobs:
           v=$("$HOME/.local/bin/rhun" --version | sed 's/^rhun //')
           case "$v" in 0.[0-9].*|0.1[0-7].*) echo "rhun $v has no extensions: the headless test needs 0.18.0"; exit 0 ;; esac
           sh tests/run.sh "$HOME/.local/bin/rhun"
+      - name: Genotype CLI
+        run: |
+          mkdir -p "$RUNNER_TEMP/genotype"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/genotype/gt" https://github.com/kossnocorp/genotype/releases/download/v0.18.0/gt-v0.18.0-x86_64-unknown-linux-gnu
+          printf '3c77075461dc4f79cff4ae7085bdc9f0265a354fe08e2de0845db9c7668c7f82  %s\n' "$RUNNER_TEMP/genotype/gt" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/genotype/gt"
+          echo "$RUNNER_TEMP/genotype" >> "$GITHUB_PATH"
+      - name: Genotype formatting
+        run: python3 tests/genotype.py "$HOME/.local/bin/rhun"
